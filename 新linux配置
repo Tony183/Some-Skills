@@ -1,0 +1,163 @@
+ 
+ 
+ 
+ https://blog.csdn.net/ares_song/article/details/79194065
+ 
+ 
+ 当你看到我这个博客的时候，我猜你应该是学习计算机的朋友，你可能会写一些漂亮的前台界面，或者能写一个小的web项目，但是你可能不知道怎样让自己的这个界面或者项目，只通过一个网址，任何人都可以随时随地进行访问。好的现在就开始手把手教你如何搭建属于自己的个性网站...
+
+     首先，你需要购买一台自己的服务器，这个服务器的作用就是用来存放你的项目，已达到24小时随时随地进行访问。国内服务器有阿里云、腾讯云等，价格根据你所选的服务器规格定选，如果你是在校大学生，这两个云服务器都有学生优惠价10/月。国外有搬瓦工https://bwh1.net/clientarea.php。这里说一下国内和国外服务器的区别，如果你还是学生，当然10块钱每月的服务器算是低价格的了，然后它会有linux和Windows两种系统挑选，但是购买后国内需要备案等等很多麻烦。国外服务器说一下最好的一个功能就是它会提供一个VPS，说白了就是你可以通过这个VPS进行翻墙，在访问youtube等需要翻墙软件才能访问的网站时，速度会很快，价格上大约30rmb/月，它支持支付宝付款，而且不需要国内服务器一样备案，大多外服都是linux系统，还不会linux的同学，建议先了解Linux基础。
+
+    如果你想购买外服却不知道如何购买，请看这里http://blog.csdn.net/ares_song/article/details/79187667。
+
+    如果你已经拥有服务器，并且会使用Linux的基本操作，那就打开你的xshell（Linux远程连接软件）连接你的服务器，如果不知道xshell的同鞋，自行百度下载了解。当你成功连接到你的服务器后，此时你的服务器中是没有vim，unzip等等这些命令，所以你需要使用yum命令进行下载。先使用#yum install lrzsz 这个命令下载rz ，下载完毕后，输入rz就可以在你的Windows桌面上传输文件到你的linux服务器上。其次你还需要使用 #yum install zip unzip 下载unzip，当你传输的压缩包是zip格式时，当然要在你的linux系统中进行解压，所以要使用unzip，然后再下载vim编辑器 #yum -y install vim*，输入这个命令后你就可以使用vim编辑器了，然后你需要配置jdk和tomcat（这里我用的是java项目）。
+
+       因为tomcat的安装依赖于Java jdk，所以我们需要在判断linux系统下面是否安装jdk，输入命令：java -version，如果显示jdk版本号，则证明已经安装。
+
+
+
+如果不显示，则证明没有安装，如果没有安装接下来教大家如何安装jdk
+
+一、在Linux中配置JDK
+
+（1）判断系统位数
+
+因为Java JDK区分32位和64位系统，所以在安装之前必须先要判断以下我们的Linux系统为多少位系统，命令如下
+
+uname -a  解释：如果有x86_64就是64位的，没有就是32位的。后面是X686或X86_64则内核是64位的，i686或i386则内核是32位的。
+
+
+
+（2）下载JDK
+
+下载JDK地址：
+
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+
+
+（3）将下载的压缩包传输到Linux服务器中并解压
+
+    这时你下载的jdk安装包是在Windows中，这时在你的linux服务器中输入 rz 命令，选择这个压缩包，传输到你的linux服务器中，传输完毕后，就可以在linux中看到jdk压缩包了，然后使用tar -zxv -f  jdk-8u65-linux-i586.gz  命令进行解压缩。此时jdk安装完毕。（注意：解压缩可以自己选择位置，记住路径）
+
+
+
+（4）配置环境变量
+
+    其次你需要配置环境变量，使用命令vim /etc/profile
+
+
+   打开之后按键盘（i）进入编辑模式,将下面的内容复制到底部
+        JAVA_HOME=/usr/local/jdk/jdk1.8.0_151
+             PATH=$JAVA_HOME/bin:$PATH
+             CLASSPATH=$JAVA_HOME/jre/lib/ext:$JAVA_HOME/lib/tools.jar
+             export PATH JAVA_HOME CLASSPATH
+
+　　备注:根据上面的配置信息，我们既可以将环境变量的配置完成，需要注意的是，红色的地方是你解压缩jdk时，存放的位置，写完之后我们按键盘（ESC）按钮退出，然后按（:wq）保存并且关闭Vim。
+　　配置完成之后，最重要的一步就是使文件立即生效：命令如下：
+　　　　source /etc/profile让profile
+
+（5）检验配置是否成功
+    上面所有的步骤完成之后，这时候我们需要检查是否安装成功，输入如下命令，如图所示：
+　　　　a.1 java -version
+　　　　a.2 echo $JAVA_HOME
+
+此时JDK已经配置成功
+
+二、在Linux中安装tomcat
+    （1）下载tomcat linux的安装包
+
+    地址：http://tomcat.apache.org/download-80.cgi，我下载的版本是8.0，下载方式如图：
+
+
+
+    （2）传输到linux服务器中并解压  
+
+      这时你下载的tomcat Linux安装包是在Windows中，这时在你的linux服务器中输入 rz 命令，选择这个压缩包，传输到你的linux服务器中，传输完毕后，就可以在linux中看到tomcat压缩包了，然后使用 tar -zxv -f apache-tomcat-8.0.29.tar.gz  命令进行解压缩。此时tomcat安装完毕。
+
+      
+
+（3）开启tomcat服务
+
+这时你需要找到tomcat/bin目录下的startup，开启tomcat服务
+
+
+
+（4）检验是否成功
+
+然后就可以在你的浏览器中进行访问测试了，在地址栏输入：ip:8080,如果访问到tomcat的界面就说明部署成功
+
+此时你的linux服务器中基本配置已经完成，下面就可以将你的项目或者界面传输到tomcat中具体操作如下：
+
+三、将项目部署到tomcat中
+
+（1）传输项目
+
+将你的项目压缩成zip，然后同样适用rz传输到linux中，传输的位置是tomcat下的webapp下的ROOT中
+
+
+
+（2）解压项目
+
+将你的项目或者界面解压到ROOT下，使用命令unzip 你的项目名，就可以解压，然后在进行访问，就可以访问到你的项目主页面了，主页面名字要是index.html,不然访问的可能还是tomcat页面。
+
+（3）访问项目
+
+然后就可以在浏览器输入ip:8080,就可以访问到你的项目页面了
+
+
+
+如果觉得这个界面很好看，可以在这里下载http://download.csdn.net/download/ares_song/10229641
+
+四、域名
+
+（1）购买域名
+
+如果大家觉得ip不好记，那就可以给自己的服务器买个域名，建议大家买外企的域名，因为不用去备案，推荐大家在NameSilo去买, .com的域名比国内的还便宜，地址https://www.namesilo.com/index.php
+
+看不懂英文，不知道如何购买？没关系，给大家推荐一个博客，轻松够得想买的域名
+
+http://www.vpsss.net/1048.html
+
+（2）使用域名
+
+如果你成功购买了域名，不知道如何使用？没关系，下面就教大家如何使用你购买的域名
+
+1、首先，你需要解析你的域名
+
+进入namesilo.com，登陆，会跳转到账户管理页面，点击Account domains后面的1进入域名管理
+
+
+
+进入DNS解析页面后，会发现NAMESILO已经帮你生成了4个A记录，那么删掉后面两个即可
+
+
+
+然后编辑剩下的两个A记录;第一个点击后面的EDIT就可以编辑了，HOSTNAME留空，ADDRESS/VALUE里面输入你的BH空间的IP地址即可（BH空间在后台-hosting-manage ips里面查看你的IP），然后点击FINISH; 第二个同样是点击EDIT，这一个要在HOSTNAME中输入WWW，并在ADDRESS/VALUE里面输入BH的IP即可，然后点击FINISH即可完成。 以上操作完成以后大约需要30分钟起效果。
+
+
+
+
+
+
+
+
+
+    如果你要添加其他的记录，可以在点击上面相应的记录选项进行设置即可完成namesilio DNS 解析
+
+
+
+2、配置tomcat相关数据
+
+在tomcat文件夹下conf目录下找到server.xml，用vim打开，
+
+
+
+修改默认端口 ，在server.xml中修改端口号8080为80，修改后如下
+
+
+
+然后ESC，：wq 保存退出
+
+过几分钟后，你就可以通过自己的域名访问到自己写的网页了
+
