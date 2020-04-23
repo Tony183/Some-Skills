@@ -1,0 +1,91 @@
+
+package com.dahua.evo.environment.annotation.service;
+
+ import com.dahua.evo.environment.annotation.ExtraCondition;
+ import com.dahua.evo.environment.business.domain.page.PageCondition;
+ import org.apache.commons.lang.StringUtils;
+ import org.aspectj.lang.ProceedingJoinPoint;
+ import org.aspectj.lang.annotation.Around;
+ import org.aspectj.lang.annotation.Aspect;
+ import org.aspectj.lang.annotation.Pointcut;
+ import org.aspectj.lang.reflect.MethodSignature;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.springframework.stereotype.Component;
+ import org.springframework.util.CollectionUtils;
+ import java.lang.annotation.Annotation;
+ import java.lang.reflect.Method;
+ import java.util.*;
+
+ /**
+  * @author yin
+  * @date 2020/4/9
+  */
+ @Component
+ @Aspect
+ public class AlarmTypeConditionAuthAdvice {
+     public static Logger logger = LoggerFactory.getLogger(AlarmTypeConditionAuthAdvice.class);
+
+
+     @Pointcut(value="@annotation(com.dahua.evo.environment.annotation.ExtraCondition)")
+     private void aspect() {
+
+     }
+
+     @Around("aspect()")
+     public Object doGetPersonPageByCondition(ProceedingJoinPoint point) throws Throwable {
+
+         String methodName = point.getSignature().getName();
+
+         MethodSignature signature = (MethodSignature)point.getSignature();
+         Class<? extends Object> targetClass = point.getTarget().getClass();
+         Method method = targetClass.getMethod(methodName, signature.getMethod().getParameterTypes());
+
+         ExtraCondition extraCondition = method.getAnnotation(ExtraCondition.class);
+
+         if (!StringUtils.equals(extraCondition.value(), "alarmType")) {
+             return point.proceed();
+         }
+
+         Annotation anns[][] = method.getParameterAnnotations();
+
+         PageCondition pageRequest = null;
+         Map condition = null;
+         boolean mapFlag = false;
+         for (Object obj : point.getArgs()) {
+             if (obj instanceof Map) {
+                 condition = (Map) obj;
+             }else if (obj instanceof PageCondition) {
+                 pageRequest = (PageCondition) obj;
+             }
+         }
+
+         if (condition == null &&  pageRequest==null) {
+             return point.proceed();
+         }else if(condition != null){
+             mapFlag = true;
+         }
+
+         String alarmTypeString ;
+         boolean needEditFlag = false;
+         if (!mapFlag && pageRequest!=null && pageRequest.getParam() != null){
+             condition = pageRequest.getParam();
+             needEditFlag = true;
+         }else if (mapFlag){
+             needEditFlag = true;
+         }
+
+         if (needEditFlag){
+             if (condition.containsKey("alarmType")){
+                 alarmTypeString = condition.get("alarmType").toString();
+                 List<String> list = Arrays.asList(alarmTypeString.split(","));
+                 condition.remove("alarmType");
+                 condition.put("alarmTypes",list);
+                 condition.put("alarmTypeString",alarmTypeString);
+             }
+         }
+         return point.proceed();
+     }
+
+ }
+
